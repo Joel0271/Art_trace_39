@@ -124,6 +124,9 @@ label {
 
       <!-- BT2 (Rotate) -->
       <button class="btn" id="bt2"></button>
+
+      <!-- BT3 (Switch Camera) -->
+      <button class="btn" id="bt3"></button>
     </div>
   </div>
 </div>
@@ -139,6 +142,7 @@ const alphaSlider = document.getElementById("alpha");
 
 const bt1 = document.getElementById("bt1");
 const bt2 = document.getElementById("bt2");
+const bt3 = document.getElementById("bt3");
 
 const fileInput = document.getElementById("fileInput");
 
@@ -148,17 +152,29 @@ let rotation = 0;
 /* =========================
    CAMERA
 ========================= */
-navigator.mediaDevices.getUserMedia({
-  video: {
-    facingMode: "environment"
+let currentFacingMode = "environment";
+let currentStream = null;
+
+async function startCamera(facingMode) {
+  // Stop previous camera
+  if (currentStream) {
+    currentStream.getTracks().forEach(track => track.stop());
   }
-})
-.then(stream => {
-  video.srcObject = stream;
-})
-.catch(err => {
-  alert("Camera access denied");
-});
+
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: facingMode }
+    });
+
+    video.srcObject = stream;
+    currentStream = stream;
+  } catch (err) {
+    alert("Camera error: " + err.message);
+  }
+}
+
+// Start camera initially
+startCamera(currentFacingMode);
 
 /* =========================
    IMAGE UPLOAD (BT1)
@@ -179,6 +195,17 @@ bt2.onclick = () => {
   rotation += 90;
   if (rotation >= 360) rotation = 0;
   updateTransform();
+};
+
+/* =========================
+   TOGGLE FRONT BACK CAM (BT3)
+========================= */
+
+bt3.onclick = () => {
+  currentFacingMode =
+    currentFacingMode === "environment" ? "user" : "environment";
+
+  startCamera(currentFacingMode);
 };
 
 /* =========================
@@ -215,8 +242,9 @@ toggleBtn.onclick = () => {
    CUSTOM BUTTON IMAGES
    (REPLACE THESE FILES)
 ========================= */
-bt1.style.backgroundImage = "url('bt1.png')";
-bt2.style.backgroundImage = "url('bt2.png')";
+bt1.style.backgroundImage = "url('assets/bt1.png')";
+bt2.style.backgroundImage = "url('assets/bt2.png')";
+bt3.style.backgroundImage = "url('assets/bt3.png')";
 
 </script>
 
